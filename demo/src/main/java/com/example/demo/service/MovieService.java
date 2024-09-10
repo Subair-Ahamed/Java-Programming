@@ -41,4 +41,7 @@ public class MovieService {
         movieRepository.deleteById(Long.valueOf(id));
     }
 
+    public List<Movie> searchMovie(String searchQuery){
+        return movieRepository.searchByTerm(searchQuery);
+    }
 }

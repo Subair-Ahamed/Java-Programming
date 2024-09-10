@@ -52,4 +52,9 @@ public class MovieController {
             return ResponseEntity.notFound().build(); // Return 404 if movie not found
         }
     }
+
+    @GetMapping("/search")
+    public List<Movie> searchMovie(@RequestParam("text") String searchQuery){
+        return movieService.searchMovie(searchQuery);
+    }
 }
