@@ -1,8 +1,12 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.PaginationData;
 import com.example.demo.entity.Movie;
 import com.example.demo.repository.MovieRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,8 +17,16 @@ public class MovieService {
     @Autowired
     private MovieRepository movieRepository;
 
-    public List<Movie> getMovies(){
-        return movieRepository.findAll();
+    public PaginationData getMovies(int offset, int limit){
+        Page<Movie> list = movieRepository.findAll(PageRequest.of(offset - 1, limit));
+        List<Movie> data = list.getContent();
+        return new PaginationData(
+                data,
+                list.getNumber() + 1,
+                data.size(),
+                list.getTotalPages(),
+                list.getTotalElements()
+        );
     }
 
     public Optional<Movie> getMovieById(Integer id){
@@ -25,16 +37,10 @@ public class MovieService {
         return movieRepository.save(movie);
     }
 
-    // Update existing movie
     public Movie updateMovie(Integer id, Movie updatedMovie) {
-        return movieRepository.findById(Long.valueOf(id))
-                .map(movie -> {
-                    movie.setName(updatedMovie.getName());
-                    movie.setDirector(updatedMovie.getDirector());
-                    movie.setActor(updatedMovie.getActor());
-                    return movieRepository.save(movie);  // Save the updated movie back to the database
-                })
-                .orElseThrow(() -> new RuntimeException("Movie not found with id " + id));
+        Movie movieData = movieRepository.findById(Long.valueOf(id)).orElseThrow(() -> new RuntimeException("Movie not found with id " + id));
+        BeanUtils.copyProperties(updatedMovie, movieData);
+        return movieRepository.save(movieData);
     }
 
     public void deleteMovie(Integer id){

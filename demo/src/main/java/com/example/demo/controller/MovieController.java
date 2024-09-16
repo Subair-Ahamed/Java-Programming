@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.PaginationData;
 import com.example.demo.entity.Movie;
 import com.example.demo.service.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,13 @@ public class MovieController {
     private MovieService movieService;
 
     @GetMapping
-    public List<Movie> getAllMovies() {
-        return movieService.getMovies();
+    public ResponseEntity<PaginationData> getAllMovies(int offset, int limit) {
+        PaginationData response = movieService.getMovies(offset, limit);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Movie> getMoviesById(@PathVariable("id") Integer id) {
+    public ResponseEntity<Movie> getMoviesById(@PathVariable Integer id) {
         Optional<Movie> movie = movieService.getMovieById(id);
         return movie.map(ResponseEntity::ok) // If movie is found, return 200 OK with movie data
                 .orElseGet(() -> ResponseEntity.notFound().build()); // If movie not found, return 404 Not Found
@@ -33,7 +35,7 @@ public class MovieController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Movie> updateMovie(@PathVariable("id") Integer id, @RequestBody Movie updatedMovie) {
+    public ResponseEntity<Movie> updateMovie(@PathVariable Integer id, @RequestBody Movie updatedMovie) {
         try {
             Movie movie = movieService.updateMovie(id, updatedMovie);
             return ResponseEntity.ok(movie);  // Return updated movie with status 200 OK
@@ -43,7 +45,7 @@ public class MovieController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMovie(@PathVariable("id") Integer id){
+    public ResponseEntity<Void> deleteMovie(@PathVariable Integer id){
         Optional<Movie> movie = movieService.getMovieById(id);
         if (movie.isPresent()) {
             movieService.deleteMovie(id);
